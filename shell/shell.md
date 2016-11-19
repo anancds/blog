@@ -1,7 +1,7 @@
 # shell脚本编程规范
 
 当然最好的规范还是[google Shell Style Guide](https://google.github.io/styleguide/shell.xml)
-
+关于shell脚本的课程的话就是：[Unix Tools & Scripting](http://www.cs.cornell.edu/courses/CS2043/2014sp/)
 ## 关于调试
 
 * sh -x 可以调试
