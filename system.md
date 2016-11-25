@@ -118,3 +118,14 @@ tags: System
 * 所有打开文件数，按进程PID排序：
 
       lsof -n | awk '{print $2}' | sort -n | uniq -c | sort -nr | more
+
+* java 启动方式
+
+      java -Djava.ext.dirs=$JAVA_HOME/jre/lib/ext:/bigdata/salut/lib/thrift:/bigdata/salut/lib -jar ThriftDriver.jar masterServer
+这种方式启动的话ps aux 查看时不会显示依赖的所有jar包，只是显示了路径
+
+    LAUNCHPATH=`find /bigdata/salut/lib/tools/ -name "*.jar" | xargs | sed "s/ /:/g"`
+    LAUNCHPATH=.:$LAUNCHPATH
+    java -cp $LAUNCHPATH:/bigdata/salut/lib/ToolsDriver.jar $MAIN
+
+用这种方式启动，会显示所有依赖的jar包。
