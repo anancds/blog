@@ -21,3 +21,9 @@
 还有一个远程调试方法是
 
     gradle run --debug-jvm
+
+## 遇到的一些问题
+
+在运行一些单元测试用例时抛出这样的异常：java.security.AccessControlException: access denied ("org.elasticsearch.ThreadPermission" "modifyArbitraryThreadGroup")。
+
+解决方法就是：VM options加上 -Dtests.security.manager=false。
