@@ -20,6 +20,16 @@ tags: System
 
 如果“rxkB/s”和“txkB/s”两种相加超过100MB的话，说明网络已经接近饱和了。
 
+* 指定服务跑在具体的cpu核上
+
+    taskset -c 1,2,3 /etc/init.d/mysql start
+    taskset -c 0 sh test.sh
+
+* 切换某个进程到指定的cpu上
+
+    taskset -pc 0 12345
+
+
 ## 内存相关
 
 * 查看内存占用情况：
