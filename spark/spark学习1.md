@@ -99,3 +99,5 @@ Executor随着spark的应用程序存活而存活，称之为static allocation o
 Executor向driver报告运行中的task的心跳和一些度量值。如下所示：
 
 ![](./images/spark-HeartbeatReceiver-Heartbeat.png)
+
+## Spark 任务调度
