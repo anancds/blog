@@ -128,3 +128,5 @@ DAGScheduler.handleJobSubmitted的源码如下：
           SparkListenerJobStart(job.jobId, jobSubmissionTime, stageInfos, properties))
         submitStage(finalStage)//提交当前Stage
       }
+
+前面提到Stage的划分是从最后一个Stage开始的，每遇到一个宽依赖处，就分裂成另外一个Stage，以此类推知道Stage划分完毕，并且最后一个Stage的类型是ResultStage。
