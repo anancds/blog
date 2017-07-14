@@ -1,82 +1,66 @@
 maven有效地帮助我们管理项目的整个生命周期，包括项目清理、编译、构建、测试、打包、安装、发布、生成报告等，并且通过依赖和插件管理，实现开发环境的统一，避免冲突及管理无序现象。
 
-## 生命周期
+## 生命周期和阶段
+maven将工程（Project）的构建过程理解为不同的生命周期(LifeCycle)和阶段（Phase）。 在工程的构建过程中，存在着不同的生命周期，这些生命周期互相独立，之间也没有一定的顺序关系。 每个生命周期又划分为不同的阶段（Phase）。阶段之间有明确的顺序关系， 同一生命周期内的阶段必须按顺序依次执行。
+
+![](../images/project.png)
+
 Maven的核心思想基于生命周期管理。这意味着构建和发布一个项目的步骤是有很清晰的定义的。构建项目的人，只需要知道一小部分构建命令和POM配置，以获得期望结果。
 Maven内置3种生命周期：
 * Default： 默认生命周期处理项目发布。
 * Clean： 负责项目清理。
 * Site： 负责项目文档发布。
 
-还有一些别的生命周期：
+![](../images/life.png)
+
+### Default
+
 * Validate： 确定项目是否配置正确，必要资源是否可用。
 * Compiler： 编译项目源码。
 * test： 使用合适的单元测试框架，测试编译结果。测试要求代码被打包或者发布。
 * package: 讲代码打包成发行版本，如：jar。
+* integration-test： 如果需要在一个综合环境中运行我们的测试，这个阶段将会运行和布署项目到该环境中。
 * verify: 运行集成测试检验，确保软件质量达标。
 * install： 安装包到本地仓库，作为其他本地项目依赖。
 * deploy: 完成所有构建、打包阶段，发布到远程仓库。
 
-生命周期汇总：
+### clean
 
-    validate,
+* pre-clean 准备清理。
+* clean 执行清理工作。
+* post-clean 执行清理后的后续工作。
 
-    initialize,
+### site：生成项目文档和站点
 
-    generate-sources,
+* pre-site 准备生成。
+* site 生成项目站点和文档。
+* post-site 执行生成文档后的后续工作。
+* site-deploy 发布项目文档。
 
-    process-sources,
+## 插件和Goal
 
-    generate-resources,
+![](../images/plugin.png)
 
-    process-resources,
+Maven中定义的工程周期和阶段只是抽象的概念，不涉及具体的功能。 具体的功能由插件（Plugin）实现。一个插件可以实现多个目标（Goal）。
 
-    compile,
+为了解耦插件的功能和工程阶段，实现高度的可配置性，maven规定插件只是实现目标的功能， 通过配置来决定在哪个阶段执行（Execution)哪些目标操作。 甚至可以把一个Goal绑定到多个Phase，以实现复用。
 
-    process-classes,
+maven内置了一些默认的插件，并根据不同的工程packing类型在各个phase中默认绑定了一些goal。 下表中列出default生命周期中各阶段默认绑定的goal，其中goal按照管理使用pluginname:goalname的方式标记：
 
-    generate-test-sources,
+| Pahse     | Plugin:Goal     |
+| :------------- | :------------- |
+| process-resources       | resources:resources       |
+|compile           |	compiler:compile|
+|process-test-resources| 	resources:testResources|
+|test-compile|compiler:testCompile|
+|test|	surefire:test|
+|package|ejb:ejb/ejb3:ejb3/jar:jar/par:par/rar:rar/war:war|
+|install|install:install|
+|deploy|deploy:deploy|
 
-    process-test-sources,
+总结下，就是如下的图：
 
-    generate-test-resources,
-
-    process-test-resources,
-
-    test-compile,
-
-    process-test-classes,
-
-    test,
-
-    prepare-package,
-
-    package,
-
-    pre-integration-test,
-
-    integration-test,
-
-    post-integration-test,
-
-    verify,
-
-    install,
-
-    deploy,
-
-    pre-clean,
-
-    clean,
-
-    post-clean,
-
-    pre-site,
-
-    site,
-
-    post-site,
-
-    site-deploy
+![](../images/sum.png)
 
 ## 两个文件
 ### pom.xml
@@ -185,3 +169,146 @@ finalName标签可定义最终打包的jar名称，在maven-jar-plugin插件中�
             </plugin>
           </plugins>
         </pluginManagement>
+
+如果不是第三方插件，Maven官方插件可以仅配置artifactId，分组默认为：org.apache.maven.plugins。
+简化版配置方式：
+
+    <plugin>
+    <artifactId>maven-antrun-plugin</artifactId>
+    <version>1.3</version>
+    </plugin>
+
+同样，调用方式也可以仅使用artifactId。如果是通用配置，调用方式则可以进一步简化。
+
+    <plugins>
+        <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+        </plugin>
+        <plugin>
+            <artifactId>maven-dependency-plugin</artifactId>
+        </plugin>
+        <plugin>
+            <artifactId>maven-enforcer-plugin</artifactId>
+        </plugin>
+    </plugins>
+
+    第三方插件需要指定groupId和artifactId，但同样可以使用pluginManagement来管理，简化配置。
+
+        <build>
+        <plugins>
+             <!--scala代码编译配置-->
+             <plugin>
+                  <groupId>net.alchim31.maven</groupId>
+                  <artifactId>scala-maven-plugin</artifactId>
+             </plugin>
+         </plugins>
+        </build>
+
+#### 插件配置
+
+##### 通用配置
+
+通常情况下通过可 configuration 标签配置其他属性，而 configuration 子标签配置，都是按照各个插件自定义来配置。如：
+
+    /**
+     * @goal query
+     * @phase package
+     * /
+    public class MyBindedQueryMojo extends AbstractMojo
+    {
+        /**
+         * @parameter expression="${query.url}"
+         * /
+        private String url;
+
+        /**
+         * @parameter default-value="60"
+         * /
+        private int timeout;
+
+        /**
+         * @parameter
+         * /
+        private String[] options;
+
+        public void execute() throws MojoExecutionException
+        {
+            ...
+        }
+    }
+
+自定义插件配置如下：
+
+    <project>
+      ...
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-myquery-plugin</artifactId>
+            <version>1.0</version>
+            <executions>
+              <execution>
+                <id>execution1</id>
+                <phase>install</phase>
+                <configuration>
+                  <url>http://www.bar.com/query</url>
+                  <timeout>15</timeout>
+                  <options>
+                    <option>four</option>
+                    <option>five</option>
+                    <option>six</option>
+                  </options>
+                </configuration>
+                <goals>
+                  <goal>query</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+      ...
+    </project>
+
+##### 阶段配置 executions
+
+可以通过executions标签，为不同生命周期阶段的分别作配置。
+
+    <plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>3.2.1</version>
+        <executions>
+            <execution>
+                <id>compile-scala</id>
+                <phase>compile</phase>
+                <goals>
+                    <goal>add-source</goal>
+                    <goal>compile</goal>
+                </goals>
+            </execution>
+            <execution>
+                <id>scala-test-compile</id>
+                <goals>
+                    <goal>add-source</goal>
+                    <goal>testCompile</goal>
+                </goals>
+            </execution>
+            <execution>
+                <phase>process-resources</phase>
+                <goals>
+                    <goal>compile</goal>
+                </goals>
+            </execution>
+        </executions>
+        <configuration>
+            <scalaVersion>${scala.version}</scalaVersion>
+            <recompileMode>incremental</recompileMode>
+            <javacArgs>
+                <javacArg>-source</javacArg>
+                <javacArg>${java.version}</javacArg>
+                <javacArg>-target</javacArg>
+                <javacArg>${java.version}</javacArg>
+            </javacArgs>
+        </configuration>
+    </plugin>
